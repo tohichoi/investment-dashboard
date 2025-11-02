@@ -1,0 +1,19 @@
+[DATA]
+path="data"
+
+[ECOS]
+# https://ecos.bok.or.kr/api/#/DevGuide/StatisticalCodeSearch
+API_KEY="KEY"
+BASE_URL="https://ecos.bok.or.kr/api"
+
+
+# 요청 인자 (Parameter),필수 여부,자료형,설명
+# Key,필수,String,발급받은 인증키 (공공데이터포털 또는 ECOS 등록키)
+# Type,필수,String,"요청 파일 타입 (예: xml, json)"
+# Service Name,필수,String,호출할 서비스명 (예: StatisticSearch)
+# Start / End Index,필수,Integer,요청할 데이터의 시작/종료 위치 (예: 1/100)
+# P_CONT_ID,선택,String,(조건 검색) 통계표 코드 (예: 200Y001)
+# P_ITEM_ID,선택,String,(조건 검색) 통계 항목 코드 (예: I0001)
+# P_FROM / P_TO,선택,String,(기간 검색) 검색 시작/종료 기간 (예: 20240101/20241231)
+# P_CYCLE,선택,String,"(주기 검색) 데이터 주기 (예: D (일), M (월), Q (분기), A (연))"
+# P_UNIT,선택,String,"(단위 검색) 검색 단위 (예: 원, 천원)"

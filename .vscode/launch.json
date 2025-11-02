@@ -1,0 +1,55 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug index.py (regular)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "index.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/dashboard",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Streamlit Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "streamlit",
+            "args": [
+                "run",
+                // 아래의 "app.py"를 실제 Streamlit 파일 이름으로 변경하세요.
+                "index.py",
+                "--server.port",
+                "8501" // 기본 포트
+            ],
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/dashboard"
+        },
+        {
+            "name": "Streamlit: Run index.py",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "streamlit.cli",
+            "args": [
+                "run",
+                "index.py",
+                "--server.port",
+                "8501",
+                "--server.headless",
+                "true"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/dashboard",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach to Python (remote)",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            }
+        }
+    ]
+}
