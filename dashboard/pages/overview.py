@@ -266,7 +266,7 @@ def show_basic_statistics():
     cols = st.columns(5, border=True)        
     for item_code, col in zip(M2_ITEM_CODES, cols):
         with col:
-            df_filter = df[df['ITEM_CODE1']==item_code]
+            df_filter = df[df['ITEM_CODE1']==item_code].copy()
             df_filter.rename(columns={'DATA_VALUE': item_code}, inplace=True)
             start_date, end_date = get_period(st.session_state.selected_period)
             show_current_to_mean_ratio(df_filter, item_code, 1.0, item_code)        
