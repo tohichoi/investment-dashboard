@@ -45,7 +45,8 @@ def load_data(dataset):
 
 def show_filtered_data(df, x_column, y_columns):
     if x_column is None:
-        df['date_only'] = df.index.strftime('%Y-%m-%d')
+        # df['date_only'] = df.index.strftime('%Y-%m-%d')
+        df.loc[:, 'date_only'] = df.index.strftime('%Y-%m-%d')
         new_x_column = 'date_only'
     else:
         new_x_column = x_column
