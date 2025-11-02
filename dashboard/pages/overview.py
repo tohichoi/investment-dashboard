@@ -46,11 +46,13 @@ def load_data(dataset):
 def show_filtered_data(df, x_column, y_columns):
     if x_column is None:
         # df['date_only'] = df.index.strftime('%Y-%m-%d')
-        df.loc[:, 'date_only'] = df.index.strftime('%Y-%m-%d')
+        new_df = df.copy()
+        new_df.loc[:, 'date_only'] = new_df.index.strftime('%Y-%m-%d')
         new_x_column = 'date_only'
     else:
         new_x_column = x_column
-    st.bar_chart(df, x=new_x_column, y=y_columns, stack=False)
+        new_df = df
+    st.bar_chart(new_df, x=new_x_column, y=y_columns, stack=False)
     # st.line_chart(df, x=x_column, y=y_columns)
 
 
