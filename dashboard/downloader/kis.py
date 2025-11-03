@@ -15,7 +15,6 @@ parent_dir = os.path.dirname(current_dir)
 data_dir = os.path.join(parent_dir, 'data/downloaded')
 
 kis_database_file_name = os.path.join(data_dir, 'databasees/kis.db')
-os.makedirs(os.path.dirname(kis_database_file_name), exist_ok=True)
 
 sys.path.insert(0, parent_dir)
 
@@ -131,6 +130,8 @@ def set_dtype_of_dataframe(table_name, df):
 
 
 def update_or_read_database(table_name, df, column_name):
+    os.makedirs(os.path.dirname(kis_database_file_name), exist_ok=True)
+    
     conn = sqlite3.connect(kis_database_file_name)
     # df_filter = df[df['stck_bsop_date'] > last_date_str]
     if df is not None and not df.empty:
