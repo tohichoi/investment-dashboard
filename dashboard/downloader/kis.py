@@ -136,13 +136,14 @@ def update_or_read_database(table_name, df, column_name):
     # df_filter = df[df['stck_bsop_date'] > last_date_str]
     if df is not None and not df.empty:
         df.to_sql(table_name, conn, if_exists='append', index=False)
+    
     df_all = pd.read_sql_query(f"SELECT * FROM {table_name} ORDER BY {column_name} DESC", conn)
     df_all[column_name] = pd.to_datetime(df_all[column_name], format='%Y%m%d')
     df_all = set_dtype_of_dataframe(table_name, df_all)
     # df_all[column_name].apply(date_converter)
     df_all.set_index(column_name, drop=False, inplace=True)
     conn.close()
-    
+
     return df_all 
     
     

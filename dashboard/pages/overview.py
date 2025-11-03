@@ -1,9 +1,10 @@
+import sqlite3
 from typing import Tuple
 import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as st_components
 from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR
-from dashboard.downloader.kis import date_converter, update_or_read_database
+from dashboard.downloader.kis import date_converter, download_data, update_or_read_database
 from downloader.ecos import M2_ITEM_CODES, get_exchange_rate, get_m2_money_supply
 import humanize
 # import altair as alt
@@ -34,9 +35,8 @@ def get_period(period_key) -> Tuple[str, str]:
 
 @st.cache_data
 def load_data(dataset):
-    # p = get_dataset_path(dataset)
-    # df = pd.read_excel(p, converters={'stck_bsop_date': date_converter})
-    df = update_or_read_database(dataset, None, 'stck_bsop_date')
+    df = download_data(dataset, 'stck_bsop_date')
+
     return df
 
 
