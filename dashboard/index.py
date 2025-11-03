@@ -24,22 +24,13 @@ def scheduled_kis_job():
     
     download_all_kis_data()
     
-    # 예시로, Streamlit의 session_state에 접근하지 않고 독립적인 작업을 수행합니다.
-    # st.session_state를 스레드에서 업데이트하려면 Streamlit의 특정 컨텍스트 처리가 필요합니다.
-    if 'job_log' not in st.session_state:
-        st.session_state.job_log = []
-    
-    # 메인 스레드가 아닌 다른 스레드에서 st.session_state를 업데이트하면 오류가 발생할 수 있습니다.
-    # 간단한 예시를 위해 print만 사용하거나, 안전한 방식으로 데이터를 공유해야 합니다.
-    # st.session_state.job_log.append(f"작업 완료: {current_time}")
-    
 
 # 2. schedule.run_pending()을 반복적으로 실행할 함수
 def run_schedule():
     """스케줄링된 작업의 pending 상태를 확인하고 실행하는 무한 루프."""
     while True:
         schedule.run_pending()
-        time.sleep(1) # 1초마다 대기
+        time.sleep(60) # 60초마다 대기
         
         
 # 3. Streamlit 앱 실행 전 스케줄러 스레드 시작

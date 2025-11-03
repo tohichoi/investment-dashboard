@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as st_components
 from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR
+from dashboard.downloader.kis import date_converter, update_or_read_database
 from downloader.ecos import M2_ITEM_CODES, get_exchange_rate, get_m2_money_supply
 import humanize
 # import altair as alt
@@ -21,11 +22,6 @@ def get_dataset_description(dataset):
 
 
 # 'YYYYMMDD' 문자열을 datetime 객체로 변환하는 함수 정의
-def date_converter(date_int):
-    # 정수 형태의 YYYYMMDD를 문자열로 변환 후, pd.to_datetime으로 변환
-    return pd.to_datetime(str(date_int), format='%Y%m%d')
-
-
 def get_period(period_key) -> Tuple[str, str]:
     end_date = pd.Timestamp.now()
     days = DATE_PRESETS.get(period_key, DATE_PRESETS['14d'])
@@ -38,9 +34,9 @@ def get_period(period_key) -> Tuple[str, str]:
 
 @st.cache_data
 def load_data(dataset):
-    p = get_dataset_path(dataset)
-    df = pd.read_excel(p, converters={'stck_bsop_date': date_converter})
-    df.set_index('stck_bsop_date', inplace=True)
+    # p = get_dataset_path(dataset)
+    # df = pd.read_excel(p, converters={'stck_bsop_date': date_converter})
+    df = update_or_read_database(dataset, None, 'stck_bsop_date')
     return df
 
 
