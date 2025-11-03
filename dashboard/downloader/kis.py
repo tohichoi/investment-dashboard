@@ -111,6 +111,8 @@ def get_latest_date_of_database_table(table_name, column_name):
     except sqlite3.OperationalError as e:
         if f'no such table: {table_name}' in str(e):
             logger.info(f"Table {table_name} does not exist. Starting from default date.")
+    except sqlite3.DatabaseError as e:
+        logger.error(f"Database error occurred: {e}. Maybe the database is absent or locked.")
     except Exception as e:
         logger.error(f"Error occurred while fetching last date: {e}")
         raise e
