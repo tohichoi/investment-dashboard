@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit.components.v1 as st_components
 from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR
 from downloader.ecos import M2_ITEM_CODES, get_exchange_rate, get_m2_money_supply
+import humanize
 # import altair as alt
 
 
@@ -238,9 +239,9 @@ def show_stock_market_forms():
     st.session_state.selected_period = selected_period
     
     
-@st.cache_data
-def st_get_exchange_rate(start_date:str, end_date:str) -> pd.DataFrame:
-    return get_exchange_rate(start_date, end_date)
+def st_get_exchange_rate(start_date:str, end_date:str) -> Tuple[str, pd.DataFrame]:
+    now = pd.Timestamp.now('Asia/Seoul')
+    return now.isoformat(), get_exchange_rate(start_date, end_date)
     
     
 @st.cache_data
@@ -257,7 +258,8 @@ def show_basic_statistics():
             st.session_state.selected_period
             
             start_date, end_date = get_period(st.session_state.selected_period)
-            df = st_get_exchange_rate(start_date, end_date)
+            updated_timestamp, df = st_get_exchange_rate(start_date, end_date)
+            st.badge(f"데이터 업데이트 시각: {humanize.naturalday(updated_timestamp)}")
             show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "미국 달러 대비 원화 환율입니다.")        
             # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
             st.dataframe(df)

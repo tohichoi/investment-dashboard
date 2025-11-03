@@ -10,12 +10,12 @@ st.set_page_config(layout="wide")
 
 
 def index():
-    pg = st.navigation(["pages/overview.py", "pages/liquidity.py", "pages/google_trends.py", "pages/settings.py"])
+    pg = st.navigation(["pages/investment_principles.py", "pages/overview.py", "pages/liquidity.py", "pages/google_trends.py", "pages/settings.py"])
     pg.run()
 
 
 # 1. 주기적으로 실행할 작업 함수 정의
-def scheduled_job():
+def scheduled_kis_job():
     """백그라운드에서 실행될 작업. Streamlit UI와 독립적입니다."""
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     # Streamlit의 session_state에 직접 접근하려면 추가적인 고려가 필요하지만,
@@ -45,13 +45,13 @@ def run_schedule():
 # 3. Streamlit 앱 실행 전 스케줄러 스레드 시작
 def start_scheduler_thread():
     """스케줄러를 별도의 데몬 스레드로 시작합니다."""
-    schedule.every().day.at("07:30", "Asia/Seoul").do(scheduled_job)
+    schedule.every().day.at("07:30", "Asia/Seoul").do(scheduled_kis_job)
 
     # 스케줄러 루프를 실행할 스레드를 생성하고 시작합니다.
     schedule_thread = threading.Thread(target=run_schedule, daemon=True)
     schedule_thread.start()
     
-    st.write("스케줄러 백그라운드 스레드가 시작되었습니다.")
+    st.info("스케줄러 백그라운드 스레드가 시작되었습니다.")
     return schedule_thread
 
 

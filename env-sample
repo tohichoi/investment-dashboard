@@ -1,0 +1,1 @@
+PYTHONPATH=/<your directory>/investment-dashboard/dashboard:$PYTHONPATH

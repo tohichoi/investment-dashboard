@@ -23,7 +23,12 @@
                 "8501" // 기본 포트
             ],
             "justMyCode": true,
-            "cwd": "${workspaceFolder}/dashboard"
+            "cwd": "${workspaceFolder}/dashboard",
+            "env": {
+                // 1. PYTHONPATH 설정 (프로젝트 루트를 포함하도록 설정)
+                "PYTHONPATH": "${workspaceFolder}",
+                // 2. 다른 변수가 있다면 여기에 추가
+            },
         },
         {
             "name": "Streamlit: Run index.py",
@@ -51,5 +56,14 @@
                 "port": 5678
             }
         }
+    ],
+    // 💡 Pylance 설정 (Python Language Server 설정)
+    "python.analysis.extraPaths": [
+        // 1. 프로젝트 루트 디렉토리를 경로에 추가 (권장)
+        // ${workspaceFolder}는 프로젝트 루트를 나타냅니다.
+        "${workspaceFolder}",
+        // 2. 특정 서브 디렉토리를 추가 (예: dashboard 폴더 내부의 모듈을 임포트할 경우)
+        "${workspaceFolder}/dashboard"
+        // 3. 다른 라이브러리 경로가 있다면 여기에 추가
     ]
 }
