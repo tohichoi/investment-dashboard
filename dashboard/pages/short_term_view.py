@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as st_components
 from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR
-from dashboard.downloader.kis import date_converter, download_data, update_or_read_database
+from downloader.kis import date_converter, download_data, update_or_read_database
 from downloader.ecos import M2_ITEM_CODES, get_exchange_rate, get_kospi_stat, get_m2_money_supply
 import humanize
 # import altair as alt
