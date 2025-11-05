@@ -34,6 +34,11 @@ def show_search_forms():
 def st_get_m2_money_supply(start_date:str, end_date:str) -> pd.DataFrame:
     return get_m2_money_supply(start_date, end_date)
 
+
+@st.cache_data
+def st_get_stock_market_funds(start_date, end_date):
+    return get_stock_market_funds(start_date, end_date)
+
     
 def show_basic_statistics():
     start_date, end_date = get_period(st.session_state.selected_period)
@@ -58,7 +63,7 @@ def show_basic_statistics():
 
     # 증시자금 추이
     st.header('Stock Market Funds', divider=True)    
-    df_stock_market_funds = get_stock_market_funds(start_date, end_date)
+    df_stock_market_funds = st_get_stock_market_funds(start_date, end_date)
     if len(df_stock_market_funds) < 1:
         st.error('No data. Please expand time window')
     else:
