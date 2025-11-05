@@ -7,6 +7,7 @@ from config import config
 BASE_URL = config['ECOS']['BASE_URL']
 API_KEY = config['ECOS']['API_KEY']
 
+
 # M2(평잔, 계절조정계열) 1)
 # 가계 및 비영리단체 2)
 # 기업 3)
@@ -117,3 +118,31 @@ def get_exchange_rate(start_date:str, end_date:str) -> pd.DataFrame:
     
     return df
     
+    
+def get_kospi_stat(start_date:str, end_date:str) -> pd.DataFrame:
+    valid_columns = ['DATA_VALUE', 'STAT_CODE', 'STAT_NAME', 'ITEM_CODE1', 'ITEM_NAME1', ]
+    url = build_url(stat_code='802Y001', item_code='0001000', date_metric='D', start_date=start_date, end_date=end_date)
+    
+    df = download_ecos_data(url, valid_columns, time_format='%Y%m%d')    
+    
+    return df
+
+
+# 증시자금 동향
+def get_stock_market_funds(start_date:str, end_date:str) -> pd.DataFrame:
+    valid_columns = ['DATA_VALUE', 'STAT_CODE', 'STAT_NAME', 'ITEM_CODE1', 'ITEM_NAME1', ]
+    item_codes = ['S23'+x for x in ['A', 'B', 'C', 'D', 'E', 'F']]
+    df_all = pd.DataFrame()
+    for item_code in item_codes:
+        url = build_url(stat_code='901Y056', item_code=item_code, date_metric='M', start_date=start_date, end_date=end_date)
+        df = download_ecos_data(url, valid_columns, time_format='%Y%m')
+        if len(df) > 0:
+            df_all = pd.concat([df_all, df], ignore_index=True)
+    return df_all
+    
+
+if __name__ == '__main__':
+    df = get_stock_market_funds('19830101', '20251101')
+    print(df.columns)
+    print(df.head(10))
+    print(df.tail(10))

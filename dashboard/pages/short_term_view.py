@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit.components.v1 as st_components
 from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR
 from dashboard.downloader.kis import date_converter, download_data, update_or_read_database
-from downloader.ecos import M2_ITEM_CODES, get_exchange_rate, get_m2_money_supply
+from downloader.ecos import M2_ITEM_CODES, get_exchange_rate, get_kospi_stat, get_m2_money_supply
 import humanize
 # import altair as alt
 
@@ -40,7 +40,7 @@ def load_data(dataset):
     return df
 
 
-def show_filtered_data(df, x_column, y_columns):
+def draw_filtered_data(df, x_column, y_columns, chart_type='bar'):
     if x_column is None:
         # df['date_only'] = df.index.strftime('%Y-%m-%d')
         new_df = df.copy()
@@ -49,8 +49,14 @@ def show_filtered_data(df, x_column, y_columns):
     else:
         new_x_column = x_column
         new_df = df
-    st.bar_chart(new_df, x=new_x_column, y=y_columns, stack=False)
-    # st.line_chart(df, x=x_column, y=y_columns)
+        
+    if chart_type == 'bar':
+        st.bar_chart(new_df, x=new_x_column, y=y_columns, stack=False)
+    elif chart_type == 'line':
+        # st.line_chart(df, x=x_column, y=y_columns)
+        st.line_chart(new_df, x=new_x_column, y=y_columns)
+    else:
+        raise TypeError(f'Unknown chart_type={chart_type}')
 
 
 def show_chart(df):
@@ -154,7 +160,7 @@ def analyze_data(df, dataset):
                 show_current_to_mean_ratio(df_filter, f'{group}_ntby_qty', 1.0,
                                     f"{target_date.date()}기준 {group_name} 투자자의 순매수 주식 수량입니다. {delta_text}")
 
-        show_filtered_data(df_filter[[f'{group}_ntby_qty' for group in groups]], 
+        draw_filtered_data(df_filter[[f'{group}_ntby_qty' for group in groups]], 
                            x_column=None, y_columns=[f'{group}_ntby_qty' for group in groups])
 
         st.markdown('##### 순매도/순매수 금액(억 원) 분석 결과:')
@@ -164,10 +170,11 @@ def analyze_data(df, dataset):
             with col:
                 show_current_to_mean_ratio(df_filter, f'{group}_ntby_tr_pbmn', 0.01,
                                     f"{target_date.date()}기준 {group_name} 투자자의 순매수 금액입니다. {delta_text}")
-        show_filtered_data(df_filter[[f'{group}_ntby_tr_pbmn' for group in groups]], 
+        draw_filtered_data(df_filter[[f'{group}_ntby_tr_pbmn' for group in groups]], 
                            x_column=None, y_columns=[f'{group}_ntby_tr_pbmn' for group in groups])
 
-        st.dataframe(df_filter)
+        with st.expander('원본 데이터 보기'):
+            st.dataframe(df_filter)
         
 
 def customize_page():
@@ -204,35 +211,38 @@ def load_stock_market_dataset():
         show_chart(df)
         
         st.subheader("Raw Data")
-        st.dataframe(df)
+        with st.expander('원본 데이터 보기'):
+            st.dataframe(df)
         
 
 def show_stock_market_forms():
-    datasets = st.pills(
-        "Select Dataset",
-        options=[
-            'domestic_stock_075_investor_daily_by_market',
-            'test'
-        ],
-        selection_mode="multi",
-        default=['domestic_stock_075_investor_daily_by_market'],
-        format_func=lambda x: get_dataset_description(x)
-    )
+    with st.form('stock_market_forms'):
+        datasets = st.pills(
+            "Select Dataset",
+            options=[
+                'domestic_stock_075_investor_daily_by_market',
+                'test'
+            ],
+            selection_mode="multi",
+            default=['domestic_stock_075_investor_daily_by_market'],
+            format_func=lambda x: get_dataset_description(x)
+        )
 
-    selected_period = st.select_slider(
-        "Select Date Range",
-        options=DATE_PRESETS.keys(),
-        format_func=lambda x: DATE_PRESETS[x]['label'],
-        value="14d",
-        key="date_range"
-    )
-    
-    if datasets:
-        st.session_state.selected_datasets = datasets
-    else:
-        st.session_state.selected_datasets = []
-    
-    st.session_state.selected_period = selected_period
+        selected_period = st.select_slider(
+            "Select Date Range",
+            options=DATE_PRESETS.keys(),
+            format_func=lambda x: DATE_PRESETS[x]['label'],
+            value="14d",
+            key="date_range"
+        )
+        
+        if datasets:
+            st.session_state.selected_datasets = datasets
+        else:
+            st.session_state.selected_datasets = []
+        
+        st.session_state.selected_period = selected_period
+        st.form_submit_button('조회')
     
     
 def st_get_exchange_rate(start_date:str, end_date:str) -> Tuple[str, pd.DataFrame]:
@@ -245,6 +255,11 @@ def st_get_m2_money_supply(start_date:str, end_date:str) -> pd.DataFrame:
     return get_m2_money_supply(start_date, end_date)
 
     
+@st.cache_data
+def st_get_kospi_stat(start_date:str, end_date:str) -> pd.DataFrame:
+    return get_kospi_stat(start_date, end_date)
+
+
 def show_basic_statistics():
     # 환율
     st.header('Exchange rate', divider=True)
@@ -258,21 +273,26 @@ def show_basic_statistics():
             st.badge(f"데이터 업데이트 시각: {humanize.naturalday(updated_timestamp)}")
             show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "미국 달러 대비 원화 환율입니다.")        
             # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
-            st.dataframe(df)
-    
-    st.header('M2 Liquidity', divider=True)
-    df = st_get_m2_money_supply(start_date, end_date)
-    
-    cols = st.columns(5, border=True)        
-    for item_code, col in zip(M2_ITEM_CODES, cols):
+            draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
+    with st.expander('원본 데이터 보기'):
+        st.dataframe(df)
+
+    st.header('KOSPI', divider=True)
+    cols = st.columns(1, border=True)        
+    for col in cols:
         with col:
-            df_filter = df[df['ITEM_CODE1']==item_code].copy()
-            df_filter.rename(columns={'DATA_VALUE': item_code}, inplace=True)
-            start_date, end_date = get_period(st.session_state.selected_period)
-            show_current_to_mean_ratio(df_filter, item_code, 1.0, item_code)        
-            # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
-            st.dataframe(df_filter)
+            st.session_state.selected_period
             
+            start_date, end_date = get_period(st.session_state.selected_period)
+            df = st_get_kospi_stat(start_date, end_date)
+            # st.badge(f"데이터 업데이트 시각: {humanize.naturalday(updated_timestamp)}")
+            show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "KOSPI")        
+            # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
+            draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
+            
+    with st.expander('원본 데이터 보기'):
+        st.dataframe(df)
+
 def index():
     st.title("Data Overview")
         
