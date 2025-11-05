@@ -75,25 +75,25 @@ def _filter_data_by_date(df, date_column, period_key):
         # return df[df[date_column] >= cutoff_date]
     
 
-def show_current_to_mean_ratio(df, column, scale_factor, help_text):
-    if column not in df.columns:
-            st.warning(f"Column '{column}' not found in DataFrame.")
+def show_current_to_mean_ratio(df, value_column, scale_factor, label_text, help_text):
+    if value_column not in df.columns:
+            st.warning(f"Column '{value_column}' not found in DataFrame.")
             return
     if df.empty:
         st.warning("DataFrame is empty.")
         return
     
-    current_value = round(df[column].iloc[0] * scale_factor, 2)
+    current_value = round(df[value_column].iloc[0] * scale_factor, 2)
     if len(df) > 1:
-        total_value_except_current = round(df[column].iloc[1:].mean() * scale_factor, 2)
+        total_value_except_current = round(df[value_column].iloc[1:].mean() * scale_factor, 2)
     else:
         total_value_except_current = current_value
-    st.metric(label=f"{COLUMN_KEY_DESC[column]['short_descs'][0]}", value=current_value, 
+    st.metric(label=label_text, value=current_value, 
             delta=round(current_value-total_value_except_current), help=help_text)
     st.info(f"기간 평균 값: {total_value_except_current:.2f}")
 
 
-def show_ntby_qty_metrics(df, column, scale_factor, help_text):
+def show_ntby_qty_metrics(df, column, scale_factor, label_text, help_text):
     """순매도/순매수 주식 수량
 
     Args:
@@ -101,11 +101,11 @@ def show_ntby_qty_metrics(df, column, scale_factor, help_text):
         column (_type_): DataFrame 컬럼명
         help_text (_type_): st.metric 도움말 텍스트
     """
-    show_current_to_mean_ratio(df, column, scale_factor, help_text)    
+    show_current_to_mean_ratio(df, column, scale_factor, label_text, help_text)    
 
 
 # frgn_ntby_tr_pbmn
-def show_ntby_tr_metrics(df, column, help_text):
+def show_ntby_tr_metrics(df, column, label_text, help_text):
     """순매도/순매수 금액
 
     Args:
@@ -118,7 +118,7 @@ def show_ntby_tr_metrics(df, column, help_text):
     # st.metric(label=f"{COLUMN_KEY_DESC[column]['short_descs'][0]}", value=current_value, 
     #           delta=current_value-total_value_except_current, help=help_text)
     # st.info(f"기간 평균 값: {total_value_except_current:.2f}")
-    show_current_to_mean_ratio(df, column, 0.01, help_text)
+    show_current_to_mean_ratio(df, column, 0.01, label_text, help_text)
 
 
 def analyze_data(df, dataset):
@@ -157,8 +157,9 @@ def analyze_data(df, dataset):
         for col, group, group_name in zip(cols, groups, group_names):
             # 순매도/순매수 주식 수량
             with col:
-                show_current_to_mean_ratio(df_filter, f'{group}_ntby_qty', 1.0,
-                                    f"{target_date.date()}기준 {group_name} 투자자의 순매수 주식 수량입니다. {delta_text}")
+                show_current_to_mean_ratio(df_filter, f'{group}_ntby_qty', 1.0, 
+                                           COLUMN_KEY_DESC[f'{group}_ntby_qty']['short_descs'][0], 
+                                        f"{target_date.date()}기준 {group_name} 투자자의 순매수 주식 수량입니다. {delta_text}")
 
         draw_filtered_data(df_filter[[f'{group}_ntby_qty' for group in groups]], 
                            x_column=None, y_columns=[f'{group}_ntby_qty' for group in groups])
@@ -169,6 +170,7 @@ def analyze_data(df, dataset):
             # 순매도/순매수 주식 수량
             with col:
                 show_current_to_mean_ratio(df_filter, f'{group}_ntby_tr_pbmn', 0.01,
+                                           COLUMN_KEY_DESC[f'{group}_ntby_qty']['short_descs'][0],
                                     f"{target_date.date()}기준 {group_name} 투자자의 순매수 금액입니다. {delta_text}")
         draw_filtered_data(df_filter[[f'{group}_ntby_tr_pbmn' for group in groups]], 
                            x_column=None, y_columns=[f'{group}_ntby_tr_pbmn' for group in groups])
@@ -233,7 +235,7 @@ def show_stock_market_forms():
             options=DATE_PRESETS.keys(),
             format_func=lambda x: DATE_PRESETS[x]['label'],
             value="14d",
-            key="date_range"
+            key="sort_term_date_range"
         )
         
         if datasets:
@@ -271,7 +273,7 @@ def show_basic_statistics():
             start_date, end_date = get_period(st.session_state.selected_period)
             updated_timestamp, df = st_get_exchange_rate(start_date, end_date)
             st.badge(f"데이터 업데이트 시각: {humanize.naturalday(updated_timestamp)}")
-            show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "미국 달러 대비 원화 환율입니다.")        
+            show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "USD/KRW", "미국 달러 대비 원화 환율입니다.")        
             # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
             draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
     with st.expander('원본 데이터 보기'):
@@ -286,14 +288,15 @@ def show_basic_statistics():
             start_date, end_date = get_period(st.session_state.selected_period)
             df = st_get_kospi_stat(start_date, end_date)
             # st.badge(f"데이터 업데이트 시각: {humanize.naturalday(updated_timestamp)}")
-            show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "KOSPI")        
+            show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "KOSPI", "KOSPI")
             # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
             draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
             
     with st.expander('원본 데이터 보기'):
         st.dataframe(df)
 
-def index():
+
+def short_term_view_index():
     st.title("Data Overview")
         
     show_stock_market_forms()
@@ -304,5 +307,3 @@ def index():
     
     customize_page()
     
-
-index()

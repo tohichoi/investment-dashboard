@@ -11,9 +11,7 @@ def load_markdown_file(file_path: Path):
     else:
         st.error(f"파일을 찾을 수 없습니다: {file_path}")
 
-def index():
+def investment_principles_index():
     p = Path(__file__).parent.parent / 'data' / 'documents' / 'Investment Principles.md'
     load_markdown_file(p)
 
-
-index()

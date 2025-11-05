@@ -31,8 +31,5 @@ def load_dataset():
     '''
     st_components.html(google_trends_embed_code_real_estate_and_stock, height=500)
 
-def index():
+def google_trends_index():
     load_dataset()
-
-
-index()

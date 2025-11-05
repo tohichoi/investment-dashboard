@@ -1,15 +1,20 @@
-from datetime import datetime
 import streamlit as st
-from downloader.kis import download_all_kis_data
+from pages.short_term_view import short_term_view_index
+from pages.long_term_view import long_term_view_index
+from pages.google_trends import google_trends_index
+from pages.settings import settings_index
 
 
 st.set_page_config(layout="wide")
 
 
 def index():
-    pg = st.navigation(["pages/investment_principles.py", "pages/short_term_view.py", 
-                        "pages/long_term_view.py", "pages/liquidity.py", 
-                        "pages/google_trends.py", "pages/settings.py"])
+    pg = st.navigation([
+                        short_term_view_index, 
+                        long_term_view_index, 
+                        google_trends_index, 
+                        "pages/investment_principles.py", 
+                        settings_index])
     pg.run()
 
 

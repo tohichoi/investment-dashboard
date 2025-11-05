@@ -7,9 +7,5 @@ from downloader.ecos import get_exchange_rate
 # import altair as alt
 
 
-def index():
+def liquidity_index():
     st.title("Liquidity Overview")
-        
-
-
-index()
