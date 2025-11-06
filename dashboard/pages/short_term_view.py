@@ -88,7 +88,7 @@ def show_current_to_mean_ratio(df, value_column, scale_factor, label_text, help_
         total_value_except_current = round(df[value_column].iloc[1:].mean() * scale_factor, 2)
     else:
         total_value_except_current = current_value
-    st.metric(label=label_text, value=current_value, 
+    st.metric(label=label_text, value=f"{current_value:,.0f}", 
             delta=round(current_value-total_value_except_current), help=help_text)
     st.info(f"기간 평균 값: {total_value_except_current:.2f}")
 
