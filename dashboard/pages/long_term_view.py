@@ -3,12 +3,12 @@ from typing import Tuple
 import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as st_components
-from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR
+from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR, M2_ITEM_CODES, STOCK_MARKET_FUNDS_ITEM_CODES
 from dashboard.downloader.kis import date_converter, download_data, update_or_read_database
-from downloader.ecos import M2_ITEM_CODES, get_exchange_rate, get_m2_money_supply, get_stock_market_funds
+from downloader.ecos import get_exchange_rate, get_m2_money_supply, get_stock_market_funds
 import humanize
 
-from pages.short_term_view import get_period, show_current_to_mean_ratio
+from pages.short_term_view import draw_filtered_data, get_period, show_current_to_mean_ratio
 # import altair as alt
 
 
@@ -49,17 +49,19 @@ def show_basic_statistics():
     if len(m2_money_supply) < 1:
         st.error('No data. Please expand time window')
     else:
-        cols = st.columns(len(m2_money_supply['ITEM_CODE1'].unique()), border=True)        
-        for item_code, col in zip(M2_ITEM_CODES, cols):
+        cols = st.columns(len(m2_money_supply.columns), border=True)        
+        for item_code, col in zip(m2_money_supply.columns, cols):
             with col:
-                df_filter = m2_money_supply[m2_money_supply['ITEM_CODE1']==item_code].copy()
-                df_filter.rename(columns={'DATA_VALUE': item_code}, inplace=True)
+                df_filter:pd.DataFrame = m2_money_supply[item_code].to_frame()
                 show_current_to_mean_ratio(df_filter, item_code, 1.0, 
                                            COLUMN_KEY_DESC[item_code]['short_descs'][0], 
                                            COLUMN_KEY_DESC[item_code]['full_desc'])
-                # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
+        with st.expander('그래프 보기'):    
+            df_chart = m2_money_supply.reset_index()
+            df_chart.rename(columns=M2_ITEM_CODES, inplace=True)
+            draw_filtered_data(df_chart, 'TIME', M2_ITEM_CODES.values(), chart_type='line')
         with st.expander('원본 데이터 보기'):
-            st.dataframe(df_filter)
+            st.dataframe(df_chart)
 
     # 증시자금 추이
     st.header('Stock Market Funds', divider=True)    
@@ -67,16 +69,19 @@ def show_basic_statistics():
     if len(df_stock_market_funds) < 1:
         st.error('No data. Please expand time window')
     else:
-        df_codes=df_stock_market_funds[['ITEM_CODE1', 'ITEM_NAME1']].drop_duplicates()
-        item_list=df_codes[['ITEM_CODE1', 'ITEM_NAME1']].values.tolist()
-        cols = st.columns(len(item_list), border=True)        
-        for (item_code, item_name), col in zip(item_list, cols):
+        cols = st.columns(len(df_stock_market_funds.columns), border=True)        
+        for item_code, col in zip(df_stock_market_funds.columns, cols):
             with col:
-                df_filter = df_stock_market_funds[df_stock_market_funds['ITEM_CODE1']==item_code].copy()
-                df_filter.rename(columns={'DATA_VALUE': item_name}, inplace=True)
-                show_current_to_mean_ratio(df_filter, item_name, 1.0, 
+                df_filter = df_stock_market_funds[item_code].to_frame()
+                df_filter.fillna(0, inplace=True)
+                show_current_to_mean_ratio(df_filter, item_code, 1.0, 
                                            COLUMN_KEY_DESC[item_code]['short_descs'][0], 
                                            COLUMN_KEY_DESC[item_code]['full_desc'])   
+        with st.expander('그래프 보기'):    
+            df_chart = df_stock_market_funds.reset_index()
+            df_chart.rename(columns=STOCK_MARKET_FUNDS_ITEM_CODES, inplace=True)
+            draw_filtered_data(df_chart, 'TIME', STOCK_MARKET_FUNDS_ITEM_CODES.values(), chart_type='line')
+
         with st.expander('원본 데이터 보기'):
             st.dataframe(df_stock_market_funds)
         

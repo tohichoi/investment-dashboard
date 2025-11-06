@@ -22,6 +22,24 @@ M2_ITEM_CODES = {
 }
 
 
+# 코드명	단위
+# 투자자 예탁금	백만원
+# 파생상품거래 예수금 1)	백만원
+# RP	백만원
+# 위탁매매 미수금	백만원
+# 신용융자 잔고 2)	백만원
+# 신용대주 잔고 2)	백만원
+STOCK_MARKET_FUNDS_ITEM_CODES = {
+    'S23A': '투자자 예탁금',
+    'S23B': '파생상품거래 예수금 1)',
+    'S23C': 'RP',
+    'S23D': '위탁매매 미수금',
+    'S23E': '신용융자 잔고 2)',
+    'S23F': '신용대주 잔고 2)',
+}
+
+
+
 def build_url(stat_code:str, item_code, date_metric, start_date: str, end_date: str) -> str:
     # url = f'{BASE_URL}/StatisticSearch/{API_KEY}/json/kr/{start_index}/{end_index}/731Y001/D/{start_date}/{end_date}/0000001'
     start_index = 1
@@ -95,18 +113,28 @@ def download_ecos_data(url: str, valid_columns, time_format) -> pd.DataFrame:
     return df_filtered
     
 
+def reshape_dataframe(df, item_code) -> pd.DataFrame:
+    df.rename(columns={'DATA_VALUE': item_code}, inplace=True)
+    df = df[item_code].to_frame()
+    df.sort_index(inplace=True, ascending=False)
+    return df
+    
+    
 def get_m2_money_supply(start_date:str, end_date:str) -> pd.DataFrame:
     valid_columns = ['DATA_VALUE', 'STAT_CODE', 'STAT_NAME', 'ITEM_CODE1', 'ITEM_NAME1', 'UNIT_NAME']
      
-    df = pd.DataFrame()
-    for item_code, item_name in M2_ITEM_CODES.items():
+    df_all = pd.DataFrame()
+    for item_code in M2_ITEM_CODES:
         url = build_url(stat_code='101Y006', item_code=item_code, date_metric='M', start_date=start_date, end_date=end_date)
         # print(url)
-        df = pd.concat([df, download_ecos_data(url, valid_columns, time_format='%Y%m')])
-
-    df.sort_index(inplace=True, ascending=False)
+        # df = pd.concat([df, download_ecos_data(url, valid_columns, time_format='%Y%m')])
+        df = reshape_dataframe(download_ecos_data(url, valid_columns, time_format='%Y%m'), item_code)
+        if len(df) > 0:
+            df_all = pd.concat([df_all, df], axis=1)
     
-    return df
+    df_all.fillna(0, inplace=True)
+    
+    return df_all
 
 
 def get_exchange_rate(start_date:str, end_date:str) -> pd.DataFrame:
@@ -133,11 +161,12 @@ def get_stock_market_funds(start_date:str, end_date:str) -> pd.DataFrame:
     valid_columns = ['DATA_VALUE', 'STAT_CODE', 'STAT_NAME', 'ITEM_CODE1', 'ITEM_NAME1', ]
     item_codes = ['S23'+x for x in ['A', 'B', 'C', 'D', 'E', 'F']]
     df_all = pd.DataFrame()
-    for item_code in item_codes:
+    for item_code in STOCK_MARKET_FUNDS_ITEM_CODES:
         url = build_url(stat_code='901Y056', item_code=item_code, date_metric='M', start_date=start_date, end_date=end_date)
-        df = download_ecos_data(url, valid_columns, time_format='%Y%m')
+        df = reshape_dataframe(download_ecos_data(url, valid_columns, time_format='%Y%m'), item_code)
         if len(df) > 0:
-            df_all = pd.concat([df_all, df], ignore_index=True)
+            df_all = pd.concat([df_all, df], axis=1)
+    df_all.fillna(0, inplace=True)
     return df_all
     
 

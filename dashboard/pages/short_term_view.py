@@ -253,7 +253,7 @@ def st_get_exchange_rate(start_date:str, end_date:str) -> Tuple[str, pd.DataFram
     
     
 @st.cache_data
-def st_get_m2_money_supply(start_date:str, end_date:str) -> pd.DataFrame:
+def st_get_m2_money_supply(start_date:str, end_date:str) -> dict:
     return get_m2_money_supply(start_date, end_date)
 
     
