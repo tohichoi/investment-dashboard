@@ -77,8 +77,8 @@ def _filter_data_by_date(df, date_column, period_key):
 
 def show_current_to_mean_ratio(df, value_column, scale_factor, label_text, help_text):
     if value_column not in df.columns:
-            st.warning(f"Column '{value_column}' not found in DataFrame.")
-            return
+        st.warning(f"Column '{value_column}' not found in DataFrame.")
+        return
     if df.empty:
         st.warning("DataFrame is empty.")
         return

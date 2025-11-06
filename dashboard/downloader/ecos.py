@@ -8,36 +8,6 @@ BASE_URL = config['ECOS']['BASE_URL']
 API_KEY = config['ECOS']['API_KEY']
 
 
-# M2(평잔, 계절조정계열) 1)
-# 가계 및 비영리단체 2)
-# 기업 3)
-# 기타금융기관 4)
-# 기타부문 5)
-M2_ITEM_CODES = {
-    'BBHS00': 'M2(평잔, 계절조정계열)',
-    'BBHSJ1': '가계 및 비영리단체',
-    'BBHSJ2': '기업',
-    'BBHSJ3': '기타금융기관',
-    'BBHSJ4': '기타부문',
-}
-
-
-# 코드명	단위
-# 투자자 예탁금	백만원
-# 파생상품거래 예수금 1)	백만원
-# RP	백만원
-# 위탁매매 미수금	백만원
-# 신용융자 잔고 2)	백만원
-# 신용대주 잔고 2)	백만원
-STOCK_MARKET_FUNDS_ITEM_CODES = {
-    'S23A': '투자자 예탁금',
-    'S23B': '파생상품거래 예수금 1)',
-    'S23C': 'RP',
-    'S23D': '위탁매매 미수금',
-    'S23E': '신용융자 잔고 2)',
-    'S23F': '신용대주 잔고 2)',
-}
-
 
 
 def build_url(stat_code:str, item_code, date_metric, start_date: str, end_date: str) -> str:
