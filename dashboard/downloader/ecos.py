@@ -1,13 +1,11 @@
 from typing import List
 import requests
 import pandas as pd
-from config import config
+from config import config, M2_ITEM_CODES, STOCK_MARKET_FUNDS_ITEM_CODES
 
 
 BASE_URL = config['ECOS']['BASE_URL']
 API_KEY = config['ECOS']['API_KEY']
-
-
 
 
 def build_url(stat_code:str, item_code, date_metric, start_date: str, end_date: str) -> str:

@@ -1,11 +1,11 @@
-import sqlite3
 from typing import Tuple
+import dateutil
 import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as st_components
 from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR
-from downloader.kis import date_converter, download_data, update_or_read_database
-from downloader.ecos import M2_ITEM_CODES, get_exchange_rate, get_kospi_stat, get_m2_money_supply
+from downloader.kis import download_data
+from downloader.ecos import get_exchange_rate, get_kospi_stat, get_m2_money_supply
 import humanize
 # import altair as alt
 
@@ -253,7 +253,7 @@ def st_get_exchange_rate(start_date:str, end_date:str) -> Tuple[str, pd.DataFram
     
     
 @st.cache_data
-def st_get_m2_money_supply(start_date:str, end_date:str) -> dict:
+def st_get_m2_money_supply(start_date:str, end_date:str) -> pd.DataFrame:
     return get_m2_money_supply(start_date, end_date)
 
     
@@ -272,7 +272,7 @@ def show_basic_statistics():
             
             start_date, end_date = get_period(st.session_state.selected_period)
             updated_timestamp, df = st_get_exchange_rate(start_date, end_date)
-            st.badge(f"데이터 업데이트 시각: {humanize.naturalday(updated_timestamp)}")
+            st.badge(f"데이터 업데이트 시각: {humanize.naturalday(dateutil.parser.parse(updated_timestamp))}")
             show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "USD/KRW", "미국 달러 대비 원화 환율입니다.")        
             # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
             draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
