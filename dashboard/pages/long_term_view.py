@@ -3,13 +3,17 @@ from typing import Tuple
 import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as st_components
-from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR, M2_ITEM_CODES, STOCK_MARKET_FUNDS_ITEM_CODES
-from dashboard.downloader.kis import date_converter, download_data, update_or_read_database
+from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR, M2_ITEM_CODES, STOCK_MARKET_FUNDS_ITEM_CODES, save_settings, settings
+from downloader.kis import date_converter, download_data, update_or_read_database
 from downloader.ecos import get_exchange_rate, get_m2_money_supply, get_stock_market_funds
 import humanize
 
 from pages.short_term_view import draw_filtered_data, get_period, show_current_to_mean_ratio
 # import altair as alt
+
+
+if 'long_term_search_form_submitted' not in st.session_state:
+    st.session_state.long_term_search_form_submitted = False
 
 
 def get_dataset_path(dataset):
@@ -22,13 +26,18 @@ def show_search_forms():
             "Select Date Range",
             options=DATE_PRESETS.keys(),
             format_func=lambda x: DATE_PRESETS[x]['label'],
-            value="14d",
+            value=settings['STATE']['long_term_view']['selected_period'],
             key="long_term_date_range"
         )
         
         st.session_state.selected_period = selected_period
-        st.form_submit_button('조회')
+        st.session_state.long_term_search_form_submitted = st.form_submit_button('조회')
 
+    # with st.form 내부에 있으면 업데이트된 값이 아님
+    # https://docs.streamlit.io/develop/concepts/architecture/forms
+    settings['STATE']['long_term_view']['selected_period'] = selected_period
+    save_settings()
+    
     
 @st.cache_data
 def st_get_m2_money_supply(start_date:str, end_date:str) -> pd.DataFrame:

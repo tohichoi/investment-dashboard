@@ -18,7 +18,7 @@
             "justMyCode": true
         },
         {
-            "name": "Python: Streamlit Debug",
+            "name": "index.py",
             "type": "debugpy",
             "request": "launch",
             "module": "streamlit",
@@ -33,7 +33,7 @@
             "cwd": "${workspaceFolder}/dashboard",
             "env": {
                 // 1. PYTHONPATH 설정 (프로젝트 루트를 포함하도록 설정)
-                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONPATH": "${workspaceFolder}/dashboard",
                 // 2. 다른 변수가 있다면 여기에 추가
             },
         },
@@ -41,7 +41,7 @@
             "name": "Streamlit: Run index.py",
             "type": "debugpy",
             "request": "launch",
-            "module": "streamlit.cli",
+            "module": "streamlit",
             "args": [
                 "run",
                 "index.py",

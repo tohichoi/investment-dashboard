@@ -2,4 +2,6 @@ import streamlit as st
 
 
 def settings_index():
-    st.error('Not implemented')
+    
+    with st.form('settings_form'):
+        st.number_input('검색 주기')

@@ -1,12 +1,31 @@
 from pathlib import Path
 import toml
 
+
+# BASE_DIR: OOO/OOO/dashboard
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-config=toml.load(BASE_DIR  / "config.toml")
+
+with open(BASE_DIR  / "config.toml", 'r+', encoding='utf-8') as fd:
+    config=toml.load(fd)
+
+
+settings_config_path = (BASE_DIR  / "settings.toml")
+if not settings_config_path.exists():
+    settings = toml.loads("""
+        [STATE.short_term_view]
+        selected_period="14d"
+        [STATE.long_term_view]
+        selected_period="1y"
+        """)
+else:
+    settings=toml.loads(settings_config_path.read_text())
+
 
 DATA_DIR = BASE_DIR / "data"
 DOWNLOAD_DATA_DIR = DATA_DIR / "downloaded"
+KIS_DATABASE_PATH = DOWNLOAD_DATA_DIR / 'databasees' / 'kis.db'
+
 
 COLUMN_KEY_DESC = {
     'stck_bsop_date': {
@@ -268,3 +287,9 @@ DATE_PRESETS = {
     "50y": {"label": "최근 50년", "days": 18250},
     "all": {"label": "전체 기간", "days": None},
 }
+
+
+def save_settings():
+    with open(BASE_DIR  / "settings.toml", 'w+') as fd:
+        toml.dump(settings, fd)
+        

@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/../", // 프로젝트 외부의 상대 경로 추가
+        "${workspaceFolder}/../dashboard",    // 프로젝트 외부의 상대 경로 추가
+    ]
+}

@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ecos/Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            // "console": "internalConsole",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/ecos",
+            "justMyCode": true,
+        },
+        {
+            "name": "ecos/ecos_api_viewer",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "streamlit",
+            "args": [
+                "run",
+                // 아래의 "app.py"를 실제 Streamlit 파일 이름으로 변경하세요.
+                "${workspaceFolder}/ecos/ecos_api_viewer.py",
+                "--server.port",
+                "8501" // 기본 포트
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/ecos"
+        },
+    ]
+}

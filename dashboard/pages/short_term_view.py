@@ -3,11 +3,12 @@ import dateutil
 import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as st_components
-from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR
+from config import COLUMN_KEY_DESC, DATE_PRESETS, DOWNLOAD_DATA_DIR, save_settings, settings
 from downloader.kis import download_data
 from downloader.ecos import get_exchange_rate, get_kospi_stat, get_m2_money_supply
 import humanize
-# import altair as alt
+import altair as alt
+import plotly.graph_objects as go
 
 
 def get_dataset_path(dataset):
@@ -40,7 +41,18 @@ def load_data(dataset):
     return df
 
 
-def draw_filtered_data(df, x_column, y_columns, chart_type='bar'):
+def draw_filtered_data(df, x_column:str|None, y_columns:list, chart_type='bar'):
+    """_summary_
+
+    Args:
+        df (_type_): df.index 는 DatetimeIndex 형식이어야 한다.
+        x_column (str): TIME 컬럼이 index 로 되어있으면 None 을 지정한다.
+        y_columns (list): stacking 할 컬럼을 리스트로 전달한다.
+        chart_type (str, optional): 'line' or 'bar'. Defaults to 'bar'.
+
+    Raises:
+        TypeError: _description_
+    """
     if x_column is None:
         # df['date_only'] = df.index.strftime('%Y-%m-%d')
         new_df = df.copy()
@@ -51,10 +63,21 @@ def draw_filtered_data(df, x_column, y_columns, chart_type='bar'):
         new_df = df
         
     if chart_type == 'bar':
-        st.bar_chart(new_df, x=new_x_column, y=y_columns, stack=False)
+        fig = go.Figure()
+        for column in y_columns:
+            fig.add_trace(go.Bar(x=new_df[new_x_column], y=new_df[column], name=column))
+        fig.update_layout(yaxis=dict(range=[new_df[y_columns].min(), new_df[y_columns].max()]))
+        st.plotly_chart(fig, width='stretch')
+
+        # st.bar_chart(new_df, x=new_x_column, y=y_columns, stack=False)
     elif chart_type == 'line':
-        # st.line_chart(df, x=x_column, y=y_columns)
-        st.line_chart(new_df, x=new_x_column, y=y_columns)
+        fig = go.Figure()
+        for column in y_columns:
+            fig.add_trace(go.Scatter(x=new_df[new_x_column], y=new_df[column], name=column))
+        fig.update_layout(yaxis=dict(range=[new_df[y_columns].min(), new_df[y_columns].max()]))
+        st.plotly_chart(fig, width='stretch')
+
+        # st.line_chart(new_df, x=new_x_column, y=y_columns)
     else:
         raise TypeError(f'Unknown chart_type={chart_type}')
 
@@ -209,9 +232,6 @@ def load_stock_market_dataset():
         st.subheader("Data Analysis")
         analyze_data(df, dataset)
         
-        st.subheader("Data Preview")
-        show_chart(df)
-        
         st.subheader("Raw Data")
         with st.expander('원본 데이터 보기'):
             st.dataframe(df)
@@ -243,57 +263,59 @@ def show_stock_market_forms():
         else:
             st.session_state.selected_datasets = []
         
-        st.session_state.selected_period = selected_period
-        st.form_submit_button('조회')
+        st.session_state.selected_period = selected_period        
+        st.form_submit_button('조회', on_click=save_settings)
+        
+    settings['STATE']['short_term_view']['selected_period']= selected_period
+    save_settings()
     
     
-def st_get_exchange_rate(start_date:str, end_date:str) -> Tuple[str, pd.DataFrame]:
+def st_get_exchange_rate(start_date:str, end_date:str) -> Tuple[pd.DataFrame, str]:
     now = pd.Timestamp.now('Asia/Seoul')
-    return now.isoformat(), get_exchange_rate(start_date, end_date)
+    return get_exchange_rate(start_date, end_date), now.isoformat()
     
     
 @st.cache_data
-def st_get_m2_money_supply(start_date:str, end_date:str) -> pd.DataFrame:
-    return get_m2_money_supply(start_date, end_date)
+def st_get_m2_money_supply(start_date:str, end_date:str) -> Tuple[pd.DataFrame, str]:
+    now = pd.Timestamp.now('Asia/Seoul')
+    return get_m2_money_supply(start_date, end_date), now.isoformat()
 
     
 @st.cache_data
-def st_get_kospi_stat(start_date:str, end_date:str) -> pd.DataFrame:
-    return get_kospi_stat(start_date, end_date)
+def st_get_kospi_stat(start_date:str, end_date:str) -> Tuple[pd.DataFrame, str]:
+    now = pd.Timestamp.now('Asia/Seoul')
+    return get_kospi_stat(start_date, end_date), now.isoformat()
 
 
 def show_basic_statistics():
     # 환율
-    st.header('Exchange rate', divider=True)
-    cols = st.columns(1, border=True)        
-    for col in cols:
-        with col:
-            st.session_state.selected_period
-            
-            start_date, end_date = get_period(st.session_state.selected_period)
-            updated_timestamp, df = st_get_exchange_rate(start_date, end_date)
-            st.badge(f"데이터 업데이트 시각: {humanize.naturalday(dateutil.parser.parse(updated_timestamp))}")
-            show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "USD/KRW", "미국 달러 대비 원화 환율입니다.")        
-            # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
+    with st.container(border=True):
+        st.header('Exchange rate', divider=True)
+        start_date, end_date = get_period(st.session_state.selected_period)
+        df, updated_timestamp = st_get_exchange_rate(start_date, end_date)
+        st.badge(f"데이터 업데이트 시각: {humanize.naturaltime(dateutil.parser.parse(updated_timestamp))}")
+        show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "USD/KRW", "미국 달러 대비 원화 환율입니다.")        
+        # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
+        
+        with st.expander('그래프 보기'):
             draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
-    with st.expander('원본 데이터 보기'):
-        st.dataframe(df)
+            
+        with st.expander('원본 데이터 보기'):
+            st.dataframe(df)
 
-    st.header('KOSPI', divider=True)
-    cols = st.columns(1, border=True)        
-    for col in cols:
-        with col:
-            st.session_state.selected_period
-            
-            start_date, end_date = get_period(st.session_state.selected_period)
-            df = st_get_kospi_stat(start_date, end_date)
-            # st.badge(f"데이터 업데이트 시각: {humanize.naturalday(updated_timestamp)}")
-            show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "KOSPI", "KOSPI")
-            # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
+    with st.container(border=True):
+        st.header('KOSPI', divider=True)
+        start_date, end_date = get_period(st.session_state.selected_period)
+        df, updated_timestamp = st_get_kospi_stat(start_date, end_date)
+        st.badge(f"데이터 업데이트 시각: {humanize.naturaltime(dateutil.parser.parse(updated_timestamp))}")        
+        show_current_to_mean_ratio(df, 'DATA_VALUE', 1.0, "KOSPI", "KOSPI")
+        # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
+        
+        with st.expander('그래프 보기'):
             draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
             
-    with st.expander('원본 데이터 보기'):
-        st.dataframe(df)
+        with st.expander('원본 데이터 보기'):
+            st.dataframe(df)
 
 
 def short_term_view_index():

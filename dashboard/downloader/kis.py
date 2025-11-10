@@ -5,8 +5,12 @@ import logging
 import pendulum
 import pandas as pd
 import os
-from sqlalchemy.types import FLOAT, INTEGER, TEXT, NUMERIC, String
+# from sqlalchemy.types import FLOAT, INTEGER, TEXT, NUMERIC, String
 import numpy as np
+
+
+cwd = Path(os.getcwd()).parent.parent
+sys.path.append(str(cwd))
 
 
 # Add parent directory to system path to find kis_auth module
@@ -146,6 +150,31 @@ def update_or_read_database(table_name, df, column_name):
 
     return df_all 
     
+
+def generate_inquire_function(table_name, query_begin_date, oldest_date):
+    functions = {
+        'domestic_stock_075_investor_daily_by_market': {
+            'function': inquire_investor_daily_by_market,
+            'kwargs': {
+                'fid_cond_mrkt_div_code': 'U',
+                'fid_input_iscd': "0001",
+                'fid_input_date_1': query_begin_date,
+                'fid_input_iscd_1': "KSP",
+                'fid_input_date_2': oldest_date,
+                'fid_input_iscd_2': "0001",                
+            }
+        }
+    }
+    
+    if table_name not in functions:
+        raise ValueError(f'table name : {table_name} is not defined in inquirable function info.')
+    
+    function_info = functions[table_name]
+    function = function_info['function'] 
+    kwargs = function_info['kwargs']
+    
+    return function, kwargs
+    
     
 def download_data(table_name, column_name):
     oldest_date_str = get_latest_date_of_database_table(table_name, column_name)
@@ -156,12 +185,12 @@ def download_data(table_name, column_name):
         return update_or_read_database(table_name, None, column_name)
     last_date_str = pendulum.parse(oldest_date_str).in_tz('Asia/Seoul').add(days=1).format('YYYYMMDD')
     print(f"Querying from data after {last_date_str} from KIS API...")
-    df = query_data(current_date_str, last_date_str)
+    df = query_data(table_name, current_date_str, last_date_str)
     df_all = update_or_read_database(table_name, df, column_name)
     return df_all
     
     
-def query_data(latest_date:str, oldest_date:str) -> pd.DataFrame:
+def query_data(table_name, latest_date:str, oldest_date:str) -> pd.DataFrame:
     """_summary_
 
     Args:
@@ -173,20 +202,23 @@ def query_data(latest_date:str, oldest_date:str) -> pd.DataFrame:
     """
     # 쿼리를 시작할 날짜. 날짜 역순이므로 최근 날짜가 됨
     query_begin_date = latest_date
+    prev_old_date = oldest_date
     df = pd.DataFrame()
     while True:
         # query_begin_date=query_begin_date.format('YYYYMMDD')
-        if query_begin_date == DEFAULT_LASTEST_DATE or query_begin_date == oldest_date:
+        if query_begin_date == DEFAULT_LASTEST_DATE or query_begin_date <= oldest_date or prev_old_date > oldest_date:
             break
         print(f"Fetching data for date: {query_begin_date}")
-        result = inquire_investor_daily_by_market(
-            fid_cond_mrkt_div_code="U",
-            fid_input_iscd="0001",
-            fid_input_date_1=query_begin_date,
-            fid_input_iscd_1="KSP",
-            fid_input_date_2=oldest_date,
-            fid_input_iscd_2="0001",
-        )
+        # result = inquire_investor_daily_by_market(
+        #     fid_cond_mrkt_div_code="U",
+        #     fid_input_iscd="0001",
+        #     fid_input_date_1=query_begin_date,
+        #     fid_input_iscd_1="KSP",
+        #     fid_input_date_2=oldest_date,
+        #     fid_input_iscd_2="0001",
+        # )
+        inquire_function, kwargs = generate_inquire_function(table_name, query_begin_date, oldest_date)
+        result = inquire_function(**kwargs)
         if len(result) == 0:
             logger.info("No more data available. Exiting loop.")
             break
@@ -196,6 +228,8 @@ def query_data(latest_date:str, oldest_date:str) -> pd.DataFrame:
         if len(result_filtered) == 0:
             logger.info("No new data found after filtering. Exiting loop.")
             break
+        
+        prev_old_date = result_filtered['stck_bsop_date'].min()
         
         df = pd.concat([df, result_filtered], ignore_index=True)
         # print(result)
