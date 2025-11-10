@@ -3,7 +3,7 @@ from pathlib import Path
 import threading
 import time
 import schedule
-from downloader.kis import download_all_kis_data
+from downloader.kis import download_all_kis_data, init_auth
 from rich import print
 
 
@@ -14,6 +14,8 @@ def scheduled_kis_job():
     # Streamlit의 session_state에 직접 접근하려면 추가적인 고려가 필요하지만,
     # 여기서는 독립적인 작업을 수행한다고 가정합니다.
     print(f"✅ 백그라운드 작업 실행: {current_time}")
+    
+    init_auth()
     
     download_all_kis_data()
     

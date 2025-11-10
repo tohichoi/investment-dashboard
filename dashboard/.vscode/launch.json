@@ -29,7 +29,7 @@
       "name": "Streamlit: Run index.py",
       "type": "debugpy",
       "request": "launch",
-      "module": "streamlit.cli",
+      "module": "streamlit",
       "args": ["run", "${workspaceFolder}/index.py", "--server.port", "8501", "--server.headless", "true"],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",

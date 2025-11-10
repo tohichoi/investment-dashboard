@@ -79,10 +79,6 @@ from downloader.kis_samples.domestic_stock.domestic_stock_functions import *
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# 인증
-ka.auth()
-trenv = ka.getTREnv()
-
 ##############################################################################################
 # [국내주식] 시세분석 > 시장별 투자자매매동향(일별) [국내주식-075]
 ##############################################################################################
@@ -246,10 +242,19 @@ def download_all_kis_data():
     return df
 
 
-if __name__ == "__main__":
-    download_all_kis_data()    
+def init_auth():
+    # 인증
+    ka.auth()
+    trenv = ka.getTREnv()
 
 
 def date_converter(date_int):
     # 정수 형태의 YYYYMMDD를 문자열로 변환 후, pd.to_datetime으로 변환
     return pd.to_datetime(str(date_int), format='%Y%m%d')
+
+
+init_auth()
+
+
+if __name__ == "__main__":
+    download_all_kis_data()
