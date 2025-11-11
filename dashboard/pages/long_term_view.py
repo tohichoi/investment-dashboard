@@ -22,15 +22,20 @@ def get_dataset_path(dataset):
 
 def show_search_forms():
     with st.form('long_term_search_form'):
-        selected_period = st.select_slider(
-            "Select Date Range",
-            options=DATE_PRESETS.keys(),
-            format_func=lambda x: DATE_PRESETS[x]['label'],
-            value=settings['STATE']['long_term_view']['selected_period'],
-            key="long_term_date_range"
-        )
+        columns = st.columns([8,2])
+        with columns[0]:
+            selected_period = st.select_slider(
+                "Select Date Range",
+                options=DATE_PRESETS.keys(),
+                format_func=lambda x: DATE_PRESETS[x]['label'],
+                value=settings['STATE']['long_term_view']['selected_period'],
+                key="long_term_date_range"
+            )
+        with columns[1]:
+            rolling_window = st.number_input('Rolling window in days', min_value=1)
         
         st.session_state.selected_period = selected_period
+        st.session_state.rolling_window = rolling_window
         st.session_state.long_term_search_form_submitted = st.form_submit_button('조회')
 
     # with st.form 내부에 있으면 업데이트된 값이 아님
@@ -68,7 +73,8 @@ def show_basic_statistics():
         with st.expander('그래프 보기'):    
             df_chart = m2_money_supply.reset_index()
             df_chart.rename(columns=M2_ITEM_CODES, inplace=True)
-            draw_filtered_data(df_chart, 'TIME', M2_ITEM_CODES.values(), chart_type='line')
+            draw_filtered_data(df_chart, 'TIME', M2_ITEM_CODES.values(), chart_type='line', 
+                               rolling_window=st.session_state.rolling_window)
         with st.expander('원본 데이터 보기'):
             st.dataframe(df_chart)
 
@@ -89,7 +95,8 @@ def show_basic_statistics():
         with st.expander('그래프 보기'):    
             df_chart = df_stock_market_funds.reset_index()
             df_chart.rename(columns=STOCK_MARKET_FUNDS_ITEM_CODES, inplace=True)
-            draw_filtered_data(df_chart, 'TIME', STOCK_MARKET_FUNDS_ITEM_CODES.values(), chart_type='line')
+            draw_filtered_data(df_chart, 'TIME', STOCK_MARKET_FUNDS_ITEM_CODES.values(), chart_type='line', 
+                               rolling_window=st.session_state.rolling_window)
 
         with st.expander('원본 데이터 보기'):
             st.dataframe(df_stock_market_funds)

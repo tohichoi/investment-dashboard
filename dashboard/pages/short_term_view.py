@@ -41,7 +41,7 @@ def load_data(dataset):
     return df
 
 
-def draw_filtered_data(df, x_column:str|None, y_columns:list, chart_type='bar'):
+def draw_filtered_data(df:pd.DataFrame, x_column:str|None, y_columns:list, chart_type='bar', rolling_window='20d'):
     """_summary_
 
     Args:
@@ -53,14 +53,17 @@ def draw_filtered_data(df, x_column:str|None, y_columns:list, chart_type='bar'):
     Raises:
         TypeError: _description_
     """
+    
+    new_df = df.copy()
+
     if x_column is None:
         # df['date_only'] = df.index.strftime('%Y-%m-%d')
-        new_df = df.copy()
+        new_df.sort_index(ascending=True, inplace=True)
         new_df.loc[:, 'date_only'] = new_df.index.strftime('%Y-%m-%d')
         new_x_column = 'date_only'
     else:
         new_x_column = x_column
-        new_df = df
+        new_df.sort_values(new_x_column, ascending=True, inplace=True)
         
     if chart_type == 'bar':
         fig = go.Figure()
@@ -74,6 +77,11 @@ def draw_filtered_data(df, x_column:str|None, y_columns:list, chart_type='bar'):
         fig = go.Figure()
         for column in y_columns:
             fig.add_trace(go.Scatter(x=new_df[new_x_column], y=new_df[column], name=column))
+            if int(rolling_window) > 1:
+                rm_column = f'{column}_rolling_mean_in_{rolling_window}'
+                new_df[rm_column] = new_df[column].rolling(window=rolling_window, center=False).mean()
+                fig.add_trace(go.Scatter(x=new_df[new_x_column], y=new_df[rm_column], name=rm_column))
+            
         fig.update_layout(yaxis=dict(range=[new_df[y_columns].min(), new_df[y_columns].max()]))
         st.plotly_chart(fig, width='stretch')
 
@@ -250,21 +258,27 @@ def show_stock_market_forms():
             format_func=lambda x: get_dataset_description(x)
         )
 
-        selected_period = st.select_slider(
-            "Select Date Range",
-            options=DATE_PRESETS.keys(),
-            format_func=lambda x: DATE_PRESETS[x]['label'],
-            value="14d",
-            key="sort_term_date_range"
-        )
+        columns = st.columns([8,2])
+        with columns[0]:
+            selected_period = st.select_slider(
+                "Select Date Range",
+                options=DATE_PRESETS.keys(),
+                format_func=lambda x: DATE_PRESETS[x]['label'],
+                value="14d",
+                key="sort_term_date_range"
+            )
+        with columns[1]:
+            rolling_window = st.number_input('Rolling window in days', min_value=1, placeholder='20d')
         
         if datasets:
             st.session_state.selected_datasets = datasets
         else:
             st.session_state.selected_datasets = []
         
-        st.session_state.selected_period = selected_period        
-        st.form_submit_button('조회', on_click=save_settings)
+        st.session_state.selected_period = selected_period
+        st.session_state.rolling_window = rolling_window
+        
+        st.form_submit_button(':material/search: 조회', on_click=save_settings)
         
     settings['STATE']['short_term_view']['selected_period']= selected_period
     save_settings()
@@ -298,7 +312,7 @@ def show_basic_statistics():
         # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
         
         with st.expander('그래프 보기'):
-            draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
+            draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line', rolling_window=st.session_state.rolling_window)
             
         with st.expander('원본 데이터 보기'):
             st.dataframe(df)
@@ -312,7 +326,7 @@ def show_basic_statistics():
         # st.metric(label="USD/KRW", value=df['DATA_VALUE'].iloc[0], delta="+5.30", help="미국 달러 대비 원화 환율입니다.")
         
         with st.expander('그래프 보기'):
-            draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line')
+            draw_filtered_data(df, x_column=None, y_columns=['DATA_VALUE'], chart_type='line', rolling_window=st.session_state.rolling_window)
             
         with st.expander('원본 데이터 보기'):
             st.dataframe(df)
