@@ -1,0 +1,65 @@
+# PROMOTION-SPEC.toml
+# Investment Dashboard - ATD 포트폴리오 연동 단일 규격 (SSOT)
+#
+# 편입 프레임: Adopted Project
+#   디렉터(Mike)가 2025-11-02 ~ 2026-01-20 단독 개발한 기존 프로젝트를
+#   ATD 허브에 편입하여 등재한 사례.
+#   ATD 는 기능 구현에 참여하지 않았으며, participating_agents 에는
+#   편입 이후 실제로 수행한 기여만 기재한다.
+#
+#   이번 편입은 등재 범위로 한정되었다. 전수 분석은 수행했으나
+#   아키텍처 명세서 작성, 결함 해소, 감사(PASS 판정), 검증은 수행하지 않았고
+#   개선 백로그로 이관했다. 자세한 내용은 PROJECT-PROMOTION.md §4 를 본다.
+
+[project]
+id = "investment-dashboard"
+title = "Investment Dashboard"
+subtitle = "한국투자증권 Open API와 한국은행 ECOS를 엮은 KOSPI 수급·유동성 대시보드와 가격 감시 알림 워커"
+category = "Quantitative Trading"
+status = "Completed"
+date = "2026. 09. 22"
+case_study_badge = "ATD Adopted Project"
+development_time = "80일 (2025.11.02 ~ 2026.01.20)"
+development_origin = "mike"
+cost_reduction = "산정 제외 (개인 프로젝트)"
+lead_director = "Mike (Managing Director)"
+thumbnail = "assets/thumbnail.jpg"
+live_demo_url = ""
+repository_url = "https://github.com/tohichoi/investment-dashboard"
+video_demo = ""
+pdf_report = ""
+
+[[participating_agents]]
+name = "Atlas"
+role = "Chief Strategy Officer"
+contribution = "기준선 확정(로컬·원격 0/0 대조), 코드베이스 전수 분석과 데이터 흐름 정리, ATD 편입 편성 및 시크릿 커밋 여부 판정"
+
+[[participating_agents]]
+name = "Sora"
+role = "Creative Media Designer"
+contribution = "분석 결과를 근거로 대시보드 화면 구성을 재현한 대표 썸네일(16:9, 1600x900) 제작"
+
+[[participating_agents]]
+name = "Chloe"
+role = "DevOps Pipeline Specialist"
+contribution = "허브 포트폴리오 등재 기여 파이프라인 실행 및 중앙 서버 반영"
+
+[[metrics]]
+label = "개발 기간"
+value = "80일"
+subtext = "2025.11.02 ~ 2026.01.20, 활동일 9일 · 커밋 26개"
+
+[[metrics]]
+label = "코드 규모"
+value = "3,500행"
+subtext = "Python 3,500행 · 분석 노트북 5,828행"
+
+[[metrics]]
+label = "연동 데이터"
+value = "2개 공식 API"
+subtext = "한국투자증권 Open API · 한국은행 ECOS"
+
+[[metrics]]
+label = "시크릿 노출"
+value = "0건"
+subtext = "전체 git 이력 검사, 자격증명은 런타임 참조만"
