@@ -55,6 +55,11 @@ role = "Creative Media Designer"
 contribution = "분석 결과를 근거로 대시보드 화면 구성을 재현한 대표 썸네일(16:9, 1600x900) 제작"
 
 [[participating_agents]]
+name = "Elena"
+role = "Chief Auditor"
+contribution = "금융 오픈 API 토큰 격리, 시크릿 제로 누출 및 서술-구현 일치 정적 품질 감사 (PASS 판정)"
+
+[[participating_agents]]
 name = "Chloe"
 role = "DevOps Pipeline Specialist"
 contribution = "허브 포트폴리오 등재 기여 파이프라인 실행 및 중앙 서버 반영"
@@ -82,6 +87,12 @@ source = "Victor"
 target = "Marcus"
 label = "API Rate Limit 보호 및 이상 호가 필터링"
 type = "risk"
+
+[[agent_flows]]
+source = "Marcus"
+target = "Elena"
+label = "API 시크릿 격리 및 코드 무관용 정적 감사"
+type = "audit"
 
 [[agent_flows]]
 source = "Marcus"
