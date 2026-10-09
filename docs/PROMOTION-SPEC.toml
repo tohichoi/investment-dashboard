@@ -35,6 +35,21 @@ role = "Chief Strategy Officer"
 contribution = "기준선 확정(로컬·원격 0/0 대조), 코드베이스 전수 분석과 데이터 흐름 정리, ATD 편입 편성 및 시크릿 커밋 여부 판정"
 
 [[participating_agents]]
+name = "Hera"
+role = "Chief Portfolio Strategist"
+contribution = "KOSPI 상장사 펀더멘털 지표 및 ECOS 거시경제 데이터의 회계 정합성 실사 및 밸류에이션 거버넌스 수립"
+
+[[participating_agents]]
+name = "Victor"
+role = "Trading Strategy Architect"
+contribution = "거시 유동성 국면별 KIS 수급 팩터 모델링 및 가격 감시 워커 알림 임계치 설계"
+
+[[participating_agents]]
+name = "Marcus"
+role = "Risk & Safety Manager"
+contribution = "일일 API 호출 한도(Rate Limit) 방어, 토큰 갱신 안정성 및 이상 호가 필터링 검증"
+
+[[participating_agents]]
 name = "Sora"
 role = "Creative Media Designer"
 contribution = "분석 결과를 근거로 대시보드 화면 구성을 재현한 대표 썸네일(16:9, 1600x900) 제작"
@@ -43,6 +58,42 @@ contribution = "분석 결과를 근거로 대시보드 화면 구성을 재현�
 name = "Chloe"
 role = "DevOps Pipeline Specialist"
 contribution = "허브 포트폴리오 등재 기여 파이프라인 실행 및 중앙 서버 반영"
+
+[[agent_flows]]
+source = "Mike"
+target = "Atlas"
+label = "KOSPI 대시보드 편입 지휘 및 기준선 확정"
+type = "direction"
+
+[[agent_flows]]
+source = "Atlas"
+target = "Hera"
+label = "거시 유동성 및 재무 데이터 회계 정합성 실사"
+type = "strategy"
+
+[[agent_flows]]
+source = "Hera"
+target = "Victor"
+label = "수급 팩터 모델링 및 가격 감시 임계치 설계"
+type = "strategy"
+
+[[agent_flows]]
+source = "Victor"
+target = "Marcus"
+label = "API Rate Limit 보호 및 이상 호가 필터링"
+type = "risk"
+
+[[agent_flows]]
+source = "Marcus"
+target = "Sora"
+label = "거시경제 및 수급 지표 16:9 도판 에셋 제작"
+type = "creative"
+
+[[agent_flows]]
+source = "Marcus"
+target = "Chloe"
+label = "포트폴리오 레지스트리 등재 및 런타임 배포"
+type = "infra"
 
 [[metrics]]
 label = "개발 기간"
